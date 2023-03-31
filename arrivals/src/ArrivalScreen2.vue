@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { onUnmounted, reactive, ref, watch } from "vue";
+import { onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { getGivenName, getRandomText, randomIntFromInterval } from "./utils";
 import "./clock.ts";
-import gsap from "gsap";
+import { gsap, Circ, Expo } from "gsap";
 import { Clock } from "./clock";
 import { Api } from "./api";
 import { Vue3Lottie } from "vue3-lottie";
@@ -21,7 +21,7 @@ type Entry = {
   text: string;
 };
 
-const clock = new Clock(new Date("2023-03-10T17:45:44.000Z"));
+const clock = new Clock(new Date("2023-03-10T17:43:59.000Z"));
 clock.setSpeed(1);
 const checkIntervalSeconds = 2;
 const queueMax = 200;
@@ -63,7 +63,7 @@ const spawnFireworks = (x: number, y: number) => {
   el.style.transform = `translate(${x}px, ${y}px)`;
   el.width = 800;
   el.className = "blur-sm absolute";
-  root.appendChild(el);
+  root?.appendChild(el);
   el.play();
   el.addEventListener("ended", () => {
     el.remove();
@@ -96,18 +96,61 @@ watch(totalScans, (n, o) => {
 });
 
 function takeFromQueue() {
-  console.log(queue.value.length);
   if (queue.value.length) {
     recentNames.value.unshift(queue.value.pop()!);
     totalScans.value++;
+    popAnim?.restart();
   }
 
-  console.log(recentNames.value.map((s) => s.text));
   if (recentNames.value.length > displayMax) {
     recentNames.value = recentNames.value.slice(0, displayMax);
-    console.log(recentNames.value.map((s) => s.text));
   }
 }
+let popAnim: gsap.core.Timeline | null = null;
+onMounted(() => {
+  popAnim = gsap
+    .timeline({ repeat: 0 })
+    .add("start")
+    .to(
+      ".counter",
+      {
+        scale: 1.05,
+        ease: Expo.easeOut,
+        duration: 0.1,
+      },
+      "start"
+    )
+    .to(
+      ".counter",
+      {
+        textShadow: "0px 0px 15px #feecd0",
+        color: "#feecd0",
+        ease: Expo.easeOut,
+        duration: 0.2,
+      },
+      "start"
+    )
+    .add("end")
+    .to(
+      ".counter",
+      {
+        scale: 1.0,
+        ease: Expo.easeOut,
+        duration: 0.5,
+      },
+      "end"
+    )
+    .to(
+      ".counter",
+      {
+        textShadow: "0px 0px 0px #feecd0",
+        color: "",
+        ease: Expo.easeOut,
+        duration: 0.5,
+      },
+      "end"
+    );
+});
 
 async function correctTotalScans() {
   const total = await api.fetchCountOfScansSince(eventStart);
@@ -173,9 +216,9 @@ correctTotalScans();
 
 <template>
   <div
-    class="max-w-[100vw] max-h-[100vh] h-screen w-screen overflow-hidden p-8 flex font-[Palatino] text-[#422E1C] overflow-hidden"
+    class="max-w-[100vw] max-h-[100vh] h-screen w-screen overflow-hidden p-8 flex font-['Work_Sans'] text-[#422E1C] overflow-hidden"
     :style="`
-      background: url('/src/assets/bg.jpg') no-repeat center center fixed;
+      background: url('/src/assets/bg3.png') no-repeat center center fixed;
       background-size: cover;
     `"
   >
@@ -191,11 +234,30 @@ correctTotalScans();
         class="absolute w-screen h-screen left-[20%] top-[25%] blur"
       /> -->
     </div>
-    <div class="w-[55%] px-20 pt-48 flex flex-col items-center z-10 relative">
-      <h2 class="text-[50px]">Checked in so far</h2>
-      <div class="text-[200px] -mt-8 align-top">
-        {{ tweenedValues.totalScans.toFixed(0)
-        }}<span class="inline-block text-[160px] relative top-[-5px]">🔥</span>
+    <div
+      class="px-20 flex flex-col items-center w-full justify-center z-10 relative"
+    >
+      <img class="mb-6" src="/src/assets/disse_mine_ord.png" width="420" />
+      <img src="/src/assets/camp_logo.png" width="1260" />
+      <!-- <div class="mt-8 italic font-[Palatino] text-[#441E0D] text-[60px]">
+        Bergprekenen - Matt. 5-7
+      </div> -->
+      <div
+        class="w-[650px] py-14 mt-12 rounded-full bg-[#441E0D] flex flex-col items-center justify-center"
+      >
+        <div
+          class="text-[140px] tracking-wider leading-none font-bold text-[#FEECD0] counter"
+        >
+          {{ totalScans.toFixed(0) }}
+        </div>
+        <div class="text-[45px] tracking-wide font-bold text-[#FEECD0]">
+          har sjekket inn
+        </div>
+      </div>
+      <div
+        class="mt-12 text-[#FEECD0] text-[50px] bg-[#441E0D] px-12 py-4 rounded-full bg-opacity-40 font-semibold"
+      >
+        Sjekk inn i bankettsalen
       </div>
     </div>
   </div>

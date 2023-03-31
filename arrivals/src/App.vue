@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onUnmounted, ref } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 import ArrivalScreen1 from "./ArrivalScreen1.vue";
 import ArrivalScreen2 from "./ArrivalScreen2.vue";
 // @ts-ignore
@@ -8,7 +8,8 @@ import { secret } from "./.secret";
 
 const password = ref(localStorage.getItem("pass") ?? "");
 const apiKey = ref<string | null>();
-const screen = ref(0);
+const storedScreen = Number(localStorage.getItem("screen"));
+const screen = ref(storedScreen ? storedScreen : 0);
 const screenCount = 2;
 
 const onKeyUp = (e: KeyboardEvent) => {
@@ -18,8 +19,11 @@ const onKeyUp = (e: KeyboardEvent) => {
   if (screen.value == screenCount) {
     screen.value = 0;
   }
+  localStorage.setItem("screen", screen.value.toString());
 };
-document.addEventListener("keyup", onKeyUp);
+onMounted(() => {
+  document.addEventListener("keyup", onKeyUp);
+});
 onUnmounted(() => {
   removeEventListener("keyup", onKeyUp);
 });
@@ -63,7 +67,7 @@ if (password.value != null) {
     </div>
   </div>
   <template v-else>
-    <ArrivalScreen1 :apiKey="apiKey" v-if="screen == 1" />
-    <ArrivalScreen2 :apiKey="apiKey" v-else />
+    <ArrivalScreen1 :apiKey="apiKey" v-if="screen == 0" />
+    <ArrivalScreen2 :apiKey="apiKey" v-else-if="screen == 1" />
   </template>
 </template>

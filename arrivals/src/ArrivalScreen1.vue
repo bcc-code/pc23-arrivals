@@ -63,7 +63,7 @@ const spawnFireworks = (x: number, y: number) => {
   el.style.transform = `translate(${x}px, ${y}px)`;
   el.width = 800;
   el.className = "blur-sm absolute";
-  root.appendChild(el);
+  root?.appendChild(el);
   el.play();
   el.addEventListener("ended", () => {
     el.remove();
