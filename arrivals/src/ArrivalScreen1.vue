@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import { onUnmounted, reactive, ref, watch } from "vue";
+import { onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { getGivenName, getRandomText, randomIntFromInterval } from "./utils";
 import "./clock.ts";
-import gsap from "gsap";
+import { gsap, Expo } from "gsap";
 import { Clock } from "./clock";
 import { Api } from "./api";
-import { Vue3Lottie } from "vue3-lottie";
 import "vue3-lottie/dist/style.css";
-import fireworksJson from "./assets/fireworks.json";
 
 const props = defineProps<{ apiKey: string }>();
 const api = new Api(props.apiKey);
@@ -34,7 +32,6 @@ const tweenedValues = reactive({
 });
 let lastTimeStamp = clock.now();
 let eventStart = new Date(clock.now());
-const fireworks1 = ref();
 
 watch(totalScans, (n) => {
   gsap.to(tweenedValues, { duration: 0.5, totalScans: Number(n) || 0 });
@@ -55,7 +52,7 @@ const spawnFireworks = (x: number, y: number) => {
   const el = document.createElement("video");
   el.autoplay;
   el.controls = false;
-  const vidString = `src/assets/Firework${(1 + Math.random() * 9)
+  const vidString = `assets/Firework${(1 + Math.random() * 9)
     .toFixed(0)
     .toString()
     .padStart(2, "0")}.${(1 + Math.random() * 2).toFixed(0)}.webm`;
@@ -90,7 +87,7 @@ watch(totalScans, (n, o) => {
   } else if (didPassCheckpoint(10, n, o)) {
     console.log("passed checkpoint 10");
     for (var x = 0; x < 3; x++) {
-      spawnFireworks(r(-100, 400), r(-150, 150));
+      spawnFireworks(r(500, 1000), r(-150, 150));
     }
   }
 });
@@ -100,6 +97,7 @@ function takeFromQueue() {
   if (queue.value.length) {
     recentNames.value.unshift(queue.value.pop()!);
     totalScans.value++;
+    popAnim?.restart();
   }
 
   console.log(recentNames.value.map((s) => s.text));
@@ -152,13 +150,49 @@ async function updateNewScans() {
   }
 }
 
-const getTransform = (index: number): string => {
-  const scale = 1 - 0.5 * (index / displayMax);
-  const y = -100 * (index / displayMax);
-  return `scale(${scale}) translate(0, ${y * -scale}px)`;
-};
-
-const fireworkVideo = ref(0);
+let popAnim: gsap.core.Timeline | null = null;
+onMounted(() => {
+  popAnim = gsap
+    .timeline({ repeat: 0 })
+    .add("start")
+    .to(
+      ".counter",
+      {
+        ease: Expo.easeOut,
+        duration: 0.1,
+      },
+      "start"
+    )
+    .to(
+      ".counter",
+      {
+        textShadow: "0px 0px 15px #feecd0",
+        color: "#feecd0",
+        ease: Expo.easeOut,
+        duration: 0.2,
+      },
+      "start"
+    )
+    .add("end")
+    .to(
+      ".counter",
+      {
+        ease: Expo.easeOut,
+        duration: 0.5,
+      },
+      "end"
+    )
+    .to(
+      ".counter",
+      {
+        textShadow: "0px 0px 0px #feecd0",
+        color: "",
+        ease: Expo.easeOut,
+        duration: 0.5,
+      },
+      "end"
+    );
+});
 
 const intervals = [
   setInterval(correctTotalScans, checkIntervalSeconds * 1000),
@@ -175,7 +209,7 @@ correctTotalScans();
   <div
     class="max-w-[100vw] max-h-[100vh] h-screen w-screen overflow-hidden p-8 flex font-[Palatino] text-[#422E1C] overflow-hidden"
     :style="`
-      background: url('/src/assets/bg.jpg') no-repeat center center fixed;
+      background: url('/assets/bg.jpg') no-repeat center center fixed;
       background-size: cover;
     `"
   >
@@ -191,16 +225,37 @@ correctTotalScans();
         class="absolute w-screen h-screen left-[20%] top-[25%] blur"
       /> -->
     </div>
-    <div class="w-[55%] px-20 pt-48 flex flex-col items-center z-10 relative">
-      <h2 class="text-[50px]">Checked in so far</h2>
-      <div class="text-[200px] -mt-8 align-top">
-        {{ tweenedValues.totalScans.toFixed(0)
-        }}<span class="inline-block text-[160px] relative top-[-5px]">🔥</span>
+    <div
+      class="w-[55%] px-20 pt-32 flex flex-col items-start z-10 relative font-['Work_Sans']"
+    >
+      <h2 class="text-[55px] w-full text-center font-bold tracking-widest">
+        Velkommen til innsjekk
+      </h2>
+
+      <div
+        style="clip-path: polygon(10% 0%, 100% 0, 100% 100%, 0% 100%)"
+        class="w-[850px] py-8 mt-4 pr-24 pl-32 rounded-r-full bg-[#441E0D] flex flex-col items-center justify-center"
+      >
+        <div
+          class="text-[220px] tracking-wider leading-none font-bold text-[#FEECD0] counter"
+        >
+          {{ totalScans.toFixed(0) }}
+        </div>
+      </div>
+      <div
+        style="clip-path: polygon(0 0, 100% 0, 90% 100%, 0 100%)"
+        class="ml-52 py-14 mt-6 pl-16 pr-24 rounded-l-full bg-[#441E0D] flex flex-col items-center justify-center"
+      >
+        <div
+          class="text-[60px] tracking-wider leading-none font-bold text-[#FEECD0]"
+        >
+          er registrert 🎉
+        </div>
       </div>
     </div>
     <div class="w-[45%] px-20 py-24 overflow-hidden" style="perspective: 100px">
       <div
-        class="h-full p-10 rounded-[50px] bg-white overflow-hidden bg-opacity-30"
+        class="h-full p-12 rounded-[50px] bg-white overflow-hidden bg-opacity-30"
       >
         <div class="flex flex-col items-center">
           <TransitionGroup name="list">

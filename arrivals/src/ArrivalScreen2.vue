@@ -2,12 +2,10 @@
 import { onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { getGivenName, getRandomText, randomIntFromInterval } from "./utils";
 import "./clock.ts";
-import { gsap, Circ, Expo } from "gsap";
+import { gsap, Expo } from "gsap";
 import { Clock } from "./clock";
 import { Api } from "./api";
-import { Vue3Lottie } from "vue3-lottie";
 import "vue3-lottie/dist/style.css";
-import fireworksJson from "./assets/fireworks.json";
 
 const props = defineProps<{ apiKey: string }>();
 const api = new Api(props.apiKey);
@@ -34,7 +32,6 @@ const tweenedValues = reactive({
 });
 let lastTimeStamp = clock.now();
 let eventStart = new Date(clock.now());
-const fireworks1 = ref();
 
 watch(totalScans, (n) => {
   gsap.to(tweenedValues, { duration: 0.5, totalScans: Number(n) || 0 });
@@ -55,7 +52,7 @@ const spawnFireworks = (x: number, y: number) => {
   const el = document.createElement("video");
   el.autoplay;
   el.controls = false;
-  const vidString = `src/assets/Firework${(1 + Math.random() * 9)
+  const vidString = `assets/Firework${(1 + Math.random() * 9)
     .toFixed(0)
     .toString()
     .padStart(2, "0")}.${(1 + Math.random() * 2).toFixed(0)}.webm`;
@@ -195,14 +192,6 @@ async function updateNewScans() {
   }
 }
 
-const getTransform = (index: number): string => {
-  const scale = 1 - 0.5 * (index / displayMax);
-  const y = -100 * (index / displayMax);
-  return `scale(${scale}) translate(0, ${y * -scale}px)`;
-};
-
-const fireworkVideo = ref(0);
-
 const intervals = [
   setInterval(correctTotalScans, checkIntervalSeconds * 1000),
   setInterval(updateNewScans, checkIntervalSeconds * 1000),
@@ -218,7 +207,7 @@ correctTotalScans();
   <div
     class="max-w-[100vw] max-h-[100vh] h-screen w-screen overflow-hidden p-8 flex font-['Work_Sans'] text-[#422E1C] overflow-hidden"
     :style="`
-      background: url('/src/assets/bg3.png') no-repeat center center fixed;
+      background: url('/assets/bg3.png') no-repeat center center fixed;
       background-size: cover;
     `"
   >
@@ -237,8 +226,8 @@ correctTotalScans();
     <div
       class="px-20 flex flex-col items-center w-full justify-center z-10 relative"
     >
-      <img class="mb-6" src="/src/assets/disse_mine_ord.png" width="420" />
-      <img src="/src/assets/camp_logo.png" width="1260" />
+      <img class="mb-6" src="/assets/disse_mine_ord.png" width="420" />
+      <img src="/assets/camp_logo.png" width="1260" />
       <!-- <div class="mt-8 italic font-[Palatino] text-[#441E0D] text-[60px]">
         Bergprekenen - Matt. 5-7
       </div> -->
