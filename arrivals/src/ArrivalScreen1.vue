@@ -19,7 +19,7 @@ type Entry = {
   text: string;
 };
 
-const clock = new Clock(new Date("2023-03-10T17:45:44.000Z"));
+const clock = new Clock();
 clock.setSpeed(1);
 const checkIntervalSeconds = 2;
 const queueMax = 200;
@@ -31,7 +31,7 @@ const tweenedValues = reactive({
   totalScans: 0,
 });
 let lastTimeStamp = clock.now();
-let eventStart = new Date(clock.now());
+let eventStart = new Date("2023-04-01T08:00:44.000Z");
 
 watch(totalScans, (n) => {
   gsap.to(tweenedValues, { duration: 0.5, totalScans: Number(n) || 0 });
@@ -116,6 +116,7 @@ async function correctTotalScans() {
     console.log("Total scans is less than what we are showing");
     return;
   } else if (total < totalScans.value + 10) {
+    console.log("Total scans is less than 10 less what we are showing");
     return;
   }
   totalScans.value = total;
