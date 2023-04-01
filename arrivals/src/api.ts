@@ -1,6 +1,4 @@
 
-import { InlineResponse2004, ItemsScansApiFactory, XMetadata } from './ticket-scanner-sdk/index';
-
 
 export type Scan = {
     id: string;
@@ -11,50 +9,32 @@ export type Scan = {
 }
 
 export class Api {
-    itemScansApi: { readItemsScans(fields?: string[] | undefined, limit?: number | undefined, meta?: string | undefined, offset?: number | undefined, sort?: string[] | undefined, filter?: string[] | undefined, search?: string | undefined, options?: any): Promise<InlineResponse2004>; };
+    apiKey: string
     constructor(apiKey: string) {
-        this.itemScansApi = ItemsScansApiFactory({
-            apiKey: 'Bearer ' + apiKey,
-        })
+        this.apiKey=apiKey
     }
 
-    async fetchScansBetween(start: Date, end: Date): Promise<{ data?: Scan[], meta?: XMetadata }> {
-        const recentScans = await this.itemScansApi.readItemsScans(
-            ["id", "date_created", "person.name", "event"],
-            undefined,
-            undefined,
-            undefined,
-            ["date_created"], // sort
-            [
-                JSON.stringify({
-                    date_created: { _gte: start.toISOString() },
-                    //event: { _eq: eventId },
-                }),
-            ] // filter
-        );
+    async fetchScansBetween(start: Date, end: Date): Promise<{ data?: Scan[], meta?: {filter_count?: number, total_count?: number} }> {
+        const recentScansRes = await fetch(`https://ticket-scanner.activityweb.no/items/scans?fields=id%2Cdate_created%2Cperson.name%2Cevent&sort=date_created&filter=%7B%22date_created%22%3A%7B%22_gte%22%3A%22${start.toISOString()}%22%7D%7D`, {
+            "headers": {
+              "authorization": "Bearer "+ this.apiKey,
+            },
+          });
+        const recentScans = await recentScansRes.json();
         console.log(recentScans.data)
         if (recentScans.data) {
-            recentScans.data = recentScans.data.filter((el) => new Date(el.date_created) < end); // because _lte gave 500 error
+            recentScans.data = recentScans.data.filter((el:any) => new Date(el.date_created) < end); // because _lte gave 500 error
         }
         return recentScans;
     }
 
     async fetchCountOfScansSince(start: Date, end?: Date): Promise<number | undefined> {
-        const recentScans = await this.itemScansApi.readItemsScans(
-            undefined,
-            0,
-            "filter_count",
-            undefined,
-            ["-date_created"],
-            [
-                JSON.stringify({
-                    _and: [
-                        { date_created: { _gte: start.toISOString() } },
-                    ]
-                }),
-            ],
-
-        );
+        const recentScansRes = await fetch(`https://ticket-scanner.activityweb.no/items/scans?limit=0&meta=filter_count&sort=-date_created&filter=%7B%22_and%22%3A%5B%7B%22date_created%22%3A%7B%22_gte%22%3A%22${start.toISOString()}%22%7D%7D%5D%7D`, {
+            "headers": {
+              "authorization": "Bearer "+this.apiKey,
+            },
+          });
+        const recentScans = await recentScansRes.json();
         return (recentScans.meta as any).filter_count;
     }
 }

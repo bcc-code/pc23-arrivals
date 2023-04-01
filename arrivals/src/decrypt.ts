@@ -86,12 +86,12 @@ export async function decrypt(secretConfig: SecretConfig, passwordInput: string)
     console.error(JSON.stringify(err));
     // TODO better handle failing promises
     setMessage(`Decryption failed: ${err}`)
-    return
+    throw err
   }
 }
 
 // Transform hexadecimal string to Uint8Array
-function hexStringToBytes(input) {
+function hexStringToBytes(input: string) {
   for (var bytes = [], c = 0; c < input.length; c += 2) {
     bytes.push(parseInt(input.substr(c, 2), 16));
   }
@@ -102,7 +102,7 @@ function hexStringToBytes(input) {
 // for encryption. This function removes the padding, expected to be
 // compatible with PKCS#7 described in RFC 5652.
 // https://en.wikipedia.org/wiki/Padding_(cryptography)#PKCS#5_and_PKCS#7
-function removePadding(input) {
+function removePadding(input: Uint8Array) {
   // Last byte is the amount of padding
   let padAmount = input[input.length - 1]
   let unpaddedSize = input.length - padAmount
@@ -110,7 +110,7 @@ function removePadding(input) {
 }
 
 // Update page with status of decryption
-function setMessage(msg) {
+function setMessage(msg: string) {
   console.log(msg)
 }
 
