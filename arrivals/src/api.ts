@@ -15,7 +15,7 @@ export class Api {
     }
 
     async fetchScansBetween(start: Date, end: Date): Promise<{ data?: Scan[], meta?: {filter_count?: number, total_count?: number} }> {
-        const recentScansRes = await fetch(`https://ticket-scanner.activityweb.no/items/scans?fields=id%2Cdate_created%2Cperson.name%2Cevent&sort=date_created&filter=%7B%22date_created%22%3A%7B%22_gte%22%3A%22${start.toISOString()}%22%7D%7D`, {
+        const recentScansRes = await fetch(`https://ticket-scanner.activityweb.no/items/scans?fields=id%2Cdate_created%2Cperson.name%2Cevent&sort=-date_created&filter=%7B%22date_created%22%3A%7B%22_gte%22%3A%22${start.toISOString()}%22%7D%7D`, {
             "headers": {
               "authorization": "Bearer "+ this.apiKey,
             },

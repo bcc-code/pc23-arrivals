@@ -115,7 +115,7 @@ async function correctTotalScans() {
   } else if (total <= totalScans.value) {
     console.log("Total scans is less than what we are showing");
     return;
-  } else if (total < totalScans.value + 10) {
+  } else if (total < totalScans.value + 10 && totalScans.value > 10) {
     console.log("Total scans is less than 10 less what we are showing");
     return;
   }
