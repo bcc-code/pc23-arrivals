@@ -47,7 +47,7 @@ const didPassCheckpoint = (
   return before != after;
 };
 
-const spawnFireworks = (x: number, y: number) => {
+const spawnFireworks = (x: number, y: number): HTMLVideoElement => {
   const root = document.querySelector(".fireworksRoot");
   const el = document.createElement("video");
   el.autoplay;
@@ -65,30 +65,134 @@ const spawnFireworks = (x: number, y: number) => {
   el.addEventListener("ended", () => {
     el.remove();
   });
+  return el;
+};
+
+const spawnConfetti = (): HTMLVideoElement => {
+  const root = document.querySelector(".fireworksRoot");
+  const el = document.createElement("video");
+  el.autoplay;
+  el.controls = false;
+  const vidString = `assets/confetti1.webm`;
+  el.src = vidString;
+  el.width = 1920;
+  el.className = "absolute z-50";
+  root?.appendChild(el);
+  el.play();
+  el.addEventListener("ended", () => {
+    el.remove();
+  });
+  return el;
+};
+
+const onKeyUp = (e: KeyboardEvent) => {
+  console.log(e);
+  if (e.shiftKey && e.code === "Digit5") {
+    checkpoint10();
+  }
+  if (e.shiftKey && e.code === "Digit6") {
+    checkpoint100();
+  }
+  if (e.shiftKey && e.code === "Digit7") {
+    checkpoint1000();
+  }
+};
+onMounted(() => {
+  document.addEventListener("keyup", onKeyUp);
+});
+onUnmounted(() => {
+  removeEventListener("keyup", onKeyUp);
+});
+
+const checkpoint1000 = () => {
+  const r = randomIntFromInterval;
+  spawnConfetti();
+  checkpoint100();
+  const popAnim = () =>
+    gsap
+      .timeline({ repeat: 0 })
+      .add("start")
+      .to(
+        ".counter",
+        {
+          textShadow: "0px 0px 15px white",
+          color: "white",
+          ease: Expo.easeOut,
+          duration: 0.1,
+        },
+        "start"
+      )
+      .add("end")
+      .to(
+        ".counter",
+        {
+          textShadow: "0px 0px 0px white",
+          color: "",
+          ease: Expo.easeOut,
+          duration: 0.1,
+        },
+        "end"
+      );
+
+  gsap
+    .timeline({ repeat: 0 })
+    .add("start")
+    .to(
+      ".counter",
+      {
+        scale: 1.1,
+        ease: Expo.easeOut,
+        duration: 0.1,
+      },
+      "start"
+    )
+    .add(popAnim().repeat(1))
+    .add("end")
+    .to(
+      ".counter",
+      {
+        scale: 1,
+        ease: Expo.easeOut,
+        duration: 0.5,
+      },
+      "end"
+    );
+};
+
+const checkpoint100 = () => {
+  const r = randomIntFromInterval;
+  for (var x = 0; x < 5; x++) {
+    spawnFireworks(r(-300, 1500), r(-300, 200));
+  }
+  setTimeout(() => {
+    for (var x = 0; x < 15; x++) {
+      spawnFireworks(r(-300, 1500), r(-300, 200));
+    }
+  }, 500);
+  setTimeout(() => {
+    for (var x = 0; x < 10; x++) {
+      spawnFireworks(r(-300, 1500), r(-300, 200));
+    }
+  }, 1300);
+};
+
+const checkpoint10 = () => {
+  const r = randomIntFromInterval;
+  for (var x = 0; x < 3; x++) {
+    spawnFireworks(r(500, 1000), r(-150, 150));
+  }
 };
 
 watch(totalScans, (n, o) => {
   const r = randomIntFromInterval;
-  if (didPassCheckpoint(100, n, o)) {
+  if (didPassCheckpoint(1000, n, o)) {
+    checkpoint1000();
+  } else if (didPassCheckpoint(100, n, o)) {
     console.log("passed checkpoint 100");
-    for (var x = 0; x < 5; x++) {
-      spawnFireworks(r(-300, 1500), r(-300, 200));
-    }
-    setTimeout(() => {
-      for (var x = 0; x < 15; x++) {
-        spawnFireworks(r(-300, 1500), r(-300, 200));
-      }
-    }, 500);
-    setTimeout(() => {
-      for (var x = 0; x < 10; x++) {
-        spawnFireworks(r(-300, 1500), r(-300, 200));
-      }
-    }, 1300);
+    checkpoint100();
   } else if (didPassCheckpoint(10, n, o)) {
     console.log("passed checkpoint 10");
-    for (var x = 0; x < 3; x++) {
-      spawnFireworks(r(500, 1000), r(-150, 150));
-    }
+    checkpoint10();
   }
 });
 
@@ -159,14 +263,6 @@ onMounted(() => {
     .to(
       ".counter",
       {
-        ease: Expo.easeOut,
-        duration: 0.1,
-      },
-      "start"
-    )
-    .to(
-      ".counter",
-      {
         textShadow: "0px 0px 15px #feecd0",
         color: "#feecd0",
         ease: Expo.easeOut,
@@ -175,14 +271,6 @@ onMounted(() => {
       "start"
     )
     .add("end")
-    .to(
-      ".counter",
-      {
-        ease: Expo.easeOut,
-        duration: 0.5,
-      },
-      "end"
-    )
     .to(
       ".counter",
       {
