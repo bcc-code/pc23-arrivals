@@ -13,6 +13,16 @@ Used at BUK Easter Camp 2023
 7. Switch between screens by pressing SHIFT+1
 8. Tweak the event start date etc in ArrivalScreen1 and ArrivalScreen2 as you need
 
+### Assets required
+
+https://elements.envato.com/fireworks-QMPGNL6, compressed, webm, transparent bg:
+
+```
+for i in *.mov; do ffmpeg -i "$i" -vf scale=-1:520 -c:v libvpx -pix_fmt yuva420p -auto-alt-ref 0 "${i%.*}.webm"; done
+```
+
+https://elements.envato.com/confetti-YUDAW48, compressed, webm, transparent bg
+
 ### Build and distribute
 
 CORS: At the point of writing the ticket scanning API only supported CORS on localhost:3000, so you can't use something like Tauri to package this.
